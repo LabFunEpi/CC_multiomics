@@ -1,9 +1,18 @@
-setwd("")
-datadir <- ""
-samplenames <- c("B23", "B30", "B31", "B34", "B36", "B39", "A5", "A6", "A12", "A16", "A25", "A40", "C1", "C2", "C3", "C4", "C5", "C8")
-allsamplenames <- c("B1", "B23", "B30", "B31", "B34", "B36", "B38", "B39", "A5", "A6", "A12", "A16", "A25", "A26", "A30", "A40", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C10", "M3399", "L010-1X")
-colors.mn <- c(`CD4 T` = "#99CCCC", `Treg` = "#E794EA", `CD8 T` = "#A9E0AB", `gdT` = "#CE5B5B", `MAIT` = "#EDA6A6", `NK` = "#E2E8A6", `B` = "#D68645", `Plasmablast` = "#48B758", `CD14 Mono` = "#B4AEE5", `CD16 Mono` = "#F9BD95", `Int Mono` = "#B81254", `cDC` = "#67A5E5", `pDC` = "#D8E1A7", `HSPC` = "#C683ED", `Neutrophils` = "#3B69B7", `Basophils` = "black")
-levels.mn <- names(colors.mn)
+# Get Cell Ranger Summary
+setwd("/cellranger_output/scMULT_v2/")
+samplenames <- c("C2", "C5", "C8", "C3", "C1", "C4", "B36", "B23", "B39", "B31", "B34", "B30", "A6", "A25", "A16", "A5", "A12", "A40")
+
+cr_summary <- lapply(paste0(samplenames, "/outs/summary.csv"), function(x){read.csv(x) %>% t() %>% t() %>% data.frame()})
+names(cr_summary) <- samplenames
+cr_summary <- bind_rows(cr_summary)
+
+write.table(cr_summary, file = "summary.table", sep = "\t", row.names = TRUE, col.names = FALSE, quote = FALSE)
+
+#####################################################################
+
+setwd("/FINAL/scMULT")
+datadir <- "/cellranger_output/scMULT_v2/"
+samplenames <- c("C2", "C5", "C8", "C3", "C1", "C4", "B36", "B23", "B39", "B31", "B34", "B30", "A6", "A25", "A16", "A5", "A12", "A40")
 
 make_mult_obj <- function(sampledir){
     h5 <- paste0(sampledir, "/outs/filtered_feature_bc_matrix.h5")
@@ -60,10 +69,15 @@ make_mult_obj <- function(sampledir){
 
 print(paste0(Sys.time(), ":: Creating MULT object list ... "))
 
-annotations <- readRDS("annotations.rds")
+# Load annotations for hg38 genome
+library(EnsDb.Hsapiens.v86)
+library(BSgenome.Hsapiens.UCSC.hg38)
+annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+seqlevelsStyle(annotations) <- 'UCSC'
+genome(annotations) <- "hg38"
 
-# objs <- lapply(paste0(datadir, samplenames), make_mult_obj)
-# names(objs) <- samplenames
+objs <- lapply(paste0(datadir, samplenames), make_mult_obj)
+names(objs) <- samplenames
 
 objs <- lapply(paste0(datadir, samplenames, "/outs/seurat_object.rds"), readRDS)
 names(objs) <- samplenames
@@ -204,9 +218,9 @@ saveRDS(atac_integrated, "atac_integrated.rds")
 
 print(paste0(Sys.time(), ":: Putting integrated RNA and ATAC part together and running WNN analysis ... "))
 
-setwd("")
-rna_integrated <- readRDS("rna_integrated.rds")
-atac_integrated <- readRDS("atac_integrated.rds")
+# setwd("/FINAL/scMULT")
+# rna_integrated <- readRDS("rna_integrated.rds")
+# atac_integrated <- readRDS("atac_integrated.rds")
 
 mult_integrated <- rna_integrated
 mult_integrated[["mATAC"]] <- atac_integrated[["mATAC"]]
@@ -223,7 +237,6 @@ pdf(file='umap-wnn-integrated-clust.pdf', width=8, height=8)
 p1
 dev.off()
 
-annotations <- readRDS("annotations.rds")
 Annotation(mult_integrated[["mATAC"]]) <- annotations
 mult_integrated <- NucleosomeSignal(object = mult_integrated, assay = "mATAC")
 mult_integrated <- TSSEnrichment(object = mult_integrated, fast = FALSE, assay = "mATAC")
@@ -369,7 +382,7 @@ saveRDS(filtered, "filtered.rds")
 
 print(paste0(Sys.time(), ":: Cell-type identification using scRNA-seq data ... "))
 
-scRNAref <- readRDS("scRNA_filtered.rds")
+scRNAref <- readRDS("/FINAL/scRNA/filtered.rds")
 mutmap <- data.frame(
     sample = c("A5", "A6", "A12", "A16", "A25", "A26", "A30", "A40", "A42", "108", "890", "M3399", "M4666", "M5167", "PM001", "C2", "C3", "C4", "C6", "C8", "L010-1", "L010-2", "L027", "C7"), 
     mutation = c("2xTET2-C", "DNMT3A-C", "TET2-C", "ASXL1-C", "TET2-C", "DNMT3A-C", "TET2-C", "2xDNMT3A-C", "TET2-C", "2xTET2-C", "EZH2-C", "2xTET2", "TET2", "ASXL1", "TET2", "DNMT3A", "TET2", "TET2/DNMT3A", "SF3B1", "2xTET2", "2xTET2", "2xTET2", "2xTET2", "ASXL1"),
@@ -378,7 +391,7 @@ mutmap <- data.frame(
 scRNAref$mutation <- (data.frame(sample = scRNAref$sample) %>% left_join(mutmap) %>% replace_na(list(mutation = "NOCHIP")))$mutation
 scRNAref$mutation1 <- (data.frame(sample = scRNAref$sample) %>% left_join(mutmap) %>% replace_na(list(mutation1 = "NOCHIP")))$mutation1
 scRNAref$mutation1 <- case_when((scRNAref$status == "COVID" & scRNAref$mutation1 == "NOCHIP") ~ "COVID", TRUE ~ scRNAref$mutation1)
-pred.monaco <- readRDS("SingleR.monaco.fine.rds")
+pred.monaco <- readRDS("/FINAL/scRNA/SingleR.monaco.fine.rds")
 scRNAref$monaco <- pred.monaco$new.fine
 
 reference <- LoadReference(path = "https://seurat.nygenome.org/azimuth/references/v1.0.0/human_pbmc")
@@ -439,7 +452,7 @@ saveRDS(filtered, "filtered.rds")
 
 #########
 
-meta <- read.table("scRNA.metadata.tsv", sep = "\t") %>% set_colnames(c("status", "sample", "age", "WHO", "CRS", "Sex"))
+meta <- read.table("/CC_multiomics/scRNA_MULT/scRNA.metadata.tsv", sep = "\t") %>% set_colnames(c("status", "sample", "age", "WHO", "CRS", "Sex"))
 meta <- meta %>% mutate(sample = factor(sample, levels = (meta %>% arrange(age))$sample)) %>% arrange(age) %>% na_if(-1) %>% replace_na(list(age = "  ", WHO = "  ", CRS = "  "))
 
 filtered$status <- (data.frame(sample = filtered$sample) %>% left_join(meta))$status
@@ -448,7 +461,6 @@ filtered$WHO <- (data.frame(sample = filtered$sample) %>% left_join(meta))$WHO
 filtered$CRS <- (data.frame(sample = filtered$sample) %>% left_join(meta))$CRS
 filtered$Sex <- (data.frame(sample = filtered$sample) %>% left_join(meta))$Sex
 
-# annotations <- readRDS("annotations.rds")
 Annotation(filtered[["mATAC"]]) <- annotations
 
 saveRDS(filtered, "filtered.rds")
@@ -524,7 +536,7 @@ library(BiocParallel)
 register(SerialParam())
 MULT_peaks <- data.frame(Peak = rownames(filtered)) %>% separate(col = "Peak", sep = "-", into = c("chr", "start", "end")) %>% makeGRangesFromDataFrame()
 
-remap_mo <- read.table("remap2022_monocyte_nr_macs2_hg38_v1_0.bed") %>% 
+remap_mo <- read.table("/public_data/remap2022/remap2022_monocyte_nr_macs2_hg38_v1_0.bed") %>% 
     select(V1:V4) %>% 
     set_colnames(c("chr", "start", "end", "name")) %>%
     separate(col = "name", sep = ":", into = c("TF", "biotype"))
@@ -539,7 +551,7 @@ names(TF_features) <- paste0("Mo.", TFs)
 remap_mo <- NULL
 filtered <- AddChromatinModule(filtered, features = TF_features, genome = genome, assay = "mATAC")
 
-remap_mac <- read.table("remap2022_macrophage_nr_macs2_hg38_v1_0.bed") %>% 
+remap_mac <- read.table("/public_data/remap2022/remap2022_macrophage_nr_macs2_hg38_v1_0.bed") %>% 
     select(V1:V4) %>% 
     set_colnames(c("chr", "start", "end", "name")) %>%
     separate(col = "name", sep = ":", into = c("TF", "biotype"))
@@ -556,6 +568,36 @@ filtered <- AddChromatinModule(filtered, features = TF_features, genome = genome
 
 saveRDS(filtered, "filtered.rds")
 
+###############################################################################
+print(paste0(Sys.time(), ":: Create MULTPLUSHANIFFA ... "))
+
+haniffa <- readRDS("/HaniffaData/HaniffaAllDiet.rds")
+haniffa <- subset(haniffa, subset = status == "Healthy")
+pred.haniffa.monaco <- readRDS("/HaniffaData/haniffa.healthy.SingleR.rds")
+haniffa$monaco <- pred.haniffa.monaco$new.fine
+haniffa$group <- case_when(haniffa$Age_interval %in% c("(20, 29]", "(30, 39]", "(40, 49]") ~ "CTRLY", TRUE ~ "CTRLO")
+haniffa$mutation <- case_when(haniffa$Age_interval %in% c("(20, 29]", "(30, 39]", "(40, 49]") ~ "CTRLY", TRUE ~ "CTRLO")
+
+MULT <- readRDS("filtered.rds")
+DefaultAssay(MULT) <- "RNA"
+mutmap <- data.frame(
+    sample = c("A5", "A6", "A12", "A16", "A25", "A26", "A30", "A40", "A42", "108", "890", "M3399", "M4666", "M5167", "PM001", "C2", "C3", "C4", "C6", "C8", "L010-1", "L010-2", "L027", "C7"), 
+    group = c("TET2C", "CHIPC", "TET2C", "CHIPC", "TET2C", "CHIPC", "TET2C", "CHIPC", "TET2C", "TET2C", "CHIPC", "TET2", "TET2", "CHIP", "TET2", "CHIP", "TET2", "TET2", "CHIP", "TET2", "TET2", "TET2", "TET2", "CHIP"),
+    mutation = c("2xTET2-C", "DNMT3A-C", "TET2-C", "ASXL1-C", "TET2-C", "DNMT3A-C", "TET2-C", "2xDNMT3A-C", "TET2-C", "2xTET2-C", "EZH2-C", "2xTET2", "TET2", "ASXL1", "TET2", "DNMT3A", "TET2", "TET2/DNMT3A", "SF3B1", "2xTET2", "2xTET2", "2xTET2", "2xTET2", "ASXL1")
+)
+MULT$group <- (data.frame(sample = MULT$sample) %>% left_join(mutmap) %>% replace_na(list(group = "COVID")))$group
+MULT$mutation <- (data.frame(sample = MULT$sample) %>% left_join(mutmap) %>% replace_na(list(mutation = "COVID")))$mutation
+MULT$monaco <- MULT$predicted.scRNA.monaco
+
+haniffa@meta.data <- haniffa@meta.data %>% select(Sex, nFeature_RNA, nCount_RNA, monaco, Age_interval, sample, group, mutation)
+MULT@meta.data <- MULT@meta.data %>% select(Sex, nFeature_RNA, nCount_RNA, monaco, age, sample, group, mutation)
+haniffa <- DietSeurat(haniffa, assays = "RNA", features = intersect(rownames(haniffa), rownames(MULT)))
+MULT <- DietSeurat(MULT, assays = "RNA", features = intersect(rownames(haniffa), rownames(MULT)))
+
+MULTPLUSHANIFFA <- merge(MULT, y = haniffa)
+MULTPLUSHANIFFA <- MULTPLUSHANIFFA %>% NormalizeData() %>% FindVariableFeatures(nfeatures = 3000)
+
+saveRDS(MULTPLUSHANIFFA, "MULTPLUSHANIFFA.rds")
 
 
 

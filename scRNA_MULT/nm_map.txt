@@ -1,0 +1,52 @@
+ASDC	ASDC
+B_exhausted	B
+B_immature	B
+B_malignant	B
+B_naive	B
+B_non-switched_memory	B
+B_switched_memory	B
+C1_CD16_mono	CD16 Mono
+CD14_mono	CD14 Mono
+CD16_mono	CD16 Mono
+HSC_CD38neg	HSPC
+HSC_CD38pos	HSPC
+CD4.CM	CD4 T
+CD4.EM	CD4 T
+CD4.IL22	CD4 T
+CD4.Naive	CD4 T
+CD4.Prolif	CD4 T
+CD4.Tfh	CD4 T
+CD4.Th1	CD4 T
+CD4.Th17	CD4 T
+CD4.Th2	CD4 T
+CD8.EM	CD8 T
+CD8.Naive	CD8 T
+CD8.Prolif	CD8 T
+CD8.TE	CD8 T
+CD83_CD14_mono	CD14 Mono
+DC1	cDC
+DC2	cDC
+DC3	cDC
+DC_prolif	cDC
+HSC_erythroid	HSPC
+ILC1_3	ILC
+ILC2	ILC
+MAIT	MAIT
+HSC_MK	HSPC
+Mono_prolif	CD14 Mono
+HSC_myeloid	HSPC
+NKT	NK_CD56dim
+NK_16hi	NK_CD56dim
+NK_56hi	NK_CD56bright
+NK_prolif	NK Proliferating
+Plasma_cell_IgA	Plasmablast
+Plasma_cell_IgG	Plasmablast
+Plasma_cell_IgM	Plasmablast
+Plasmablast	Plasmablast
+Platelets	Platelet
+HSC_prolif	HSPC
+RBC	Eryth
+Treg	Treg
+gdT	gdT
+pDC	pDC
+

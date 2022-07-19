@@ -1,0 +1,227 @@
+1	yes	689053	91	16-Apr-1929	Male	TET2	TET2			10	7.1	4.85	0.38	1.84	214	83.6	131	yes	yes	no	no	no	no	no
+2	yes	1522155	96	31-May-1924	Female	TP53	DNMT3A			10	5.5	3.08	0.11	2.28	147	50.6	149	yes	yes	yes	yes	no	yes	no
+3	no	1525185	73	7-Feb-1947	Male					14.1	4.7	3.42	0.57	0.67	70	133	709	yes	yes	no	no	no	no	no
+4	yes	2051637	65	7-Sep-1955	Male	TET2				9	3.2	2.51	0.46	0.25	171	22.4	1329	yes	yes	yes	yes	no	yes	yes
+5	no	2123478	78	22-Nov-1942	Female					15.5	4.1	2.97	0.51	0.59	246	13.2	NA	no	yes	no	no	no	no	no
+6	no	2298814	79	31-Oct-1941	Male					16.9	6.3	4.82	0.63	0.88	135	24.5	926	yes	yes	no	no	no	no	no
+7	no	2316836	60	20-Aug-1960	Male					14.1	5.3	3.36	0.68	1.09	178	NA	NA	no	NA	no	no	no	no	no
+8	no	2941589	61	24-Jul-1959	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+9	no	2982032	57	25-Jun-1963	Female					NA	NA	NA	NA	NA	NA	NA	NA	no	NA	no	no	no	no	no
+10	no	2986450	84	1-Jul-1936	Male					10.3	3.2	2.17	0.25	0.75	111	57.4	303	no	yes	no	no	no	no	no
+11	no	3088149	52	6-Jun-1968	Male					NA	NA	NA	NA	NA	NA	NA	NA	no	NA	no	no	no	no	no
+12	no	3185208	60	14-Mar-1960	Female					12.2	8.7	7.01	0.3	1.42	270	127.8	276	yes	yes	no	yes	yes	no	no
+13	yes	3807791	59	14-Oct-1961	Male	DNMT3A				16.8	11.5	9.95	0.78	0.78	347	52	2982	yes	yes	yes	yes	yes	yes	no
+14	no	4015005	57	28-Aug-1963	Female					14.8	4.1	2.77	0.28	1.02	147	NA	NA	yes	yes	no	no	no	no	no
+15	no	4128443	55	3-Mar-1966	Male					NA	NA	NA	NA	NA	NA	NA	NA	no	NA	no	no	no	no	no
+16	no	4251947	29	1-Nov-1991	Male					NA	NA	NA	NA	NA	NA	NA	NA	no	NA	no	no	no	no	no
+17	no	4278895	57	27-Dec-1963	Male					NA	NA	NA	NA	NA	NA	NA	NA	no	NA	no	no	no	no	no
+18	yes	4380239	62	9-May-1958	Female	DNMT3A				NA	NA	NA	NA	NA	NA	NA	NA	no	NA	NA	NA	NA	NA	NA
+19	no	4385138	27	18-Jun-1993	Male					NA	NA	NA	NA	NA	NA	NA	NA	no	NA	no	no	no	no	no
+20	yes	4501267	96	10-Sep-1924	Male	TET2	TET2			13.4	3.5	60.9	17.3	21.2	118	30.6	449	yes	yes	no	yes	no	no	no
+21	yes	4519600	58	26-Jul-1962	Male	DNMT3A				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+22	no	4520534	86	27-Dec-1934	Male					14.6	4.9	3.41	0.59	0.84	130	73.4	401	no	yes	no	no	no	no	no
+23	no	4522217	62	25-Feb-1958	Female					9	6.6	5.56	0.29	0.71	233	83.5	101	yes	yes	no	no	no	no	no
+24	yes	4566240	96	16-Mar-1924	Male	DNMT3A	DNMT3A	IDH2	DNMT3A	11.7	7.3	5.09	1.07	1.03	69	193.3	386	yes	yes	no	no	no	no	no
+25	yes	4577086	89	12-Jun-1931	Female	CREBBP	SF3B1			11.8	6.8	3	0.6	3.12	194	11.2	35	yes	yes	no	no	no	no	no
+26	no	4605731	72	11-Nov-1948	Male					12.3	3.7	2.6	0.35	0.5	117	NA	NA	no	yes	no	no	no	no	no
+27	no	4617712	64	5-Aug-1956	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+28	no	4642710	81	15-Oct-1939	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+29	yes	4667537	90	4-Dec-1930	Female	TET2				11	3.3	2.86	0.21	0.24	82	111.6	1870	yes	yes	no	no	no	no	no
+30	yes	4669227	99	3-Aug-1921	Female	TET2				15.8	8.4	7.44	0.5	0.43	222	55.8	577	yes	yes	no	no	no	no	no
+31	yes	4674094	83	12-Mar-1937	Female	TET2	DNMT3A			13.1	3.4	2.34	0.13	0.9	186	52.1	424	yes	yes	no	no	no	no	no
+32	yes	4685332	92	11-May-1928	Female	SUZ12				11.2	4.5	3.12	0.29	1.02	183	177.9	457	yes	yes	yes	no	no	no	no
+33	yes	4696359	62	25-Apr-1958	Male	BRCC3				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+34	no	4711018	55	17-Dec-1965	Female					8.7	5.2	3.49	0.48	1.04	246	32.2	86	no	yes	yes	no	no	no	no
+35	no	4724676	66	19-May-1954	Male					10.7	8.3	6.94	0.72	0.45	153	160.7	210	yes	yes	yes	no	no	no	no
+36	yes	4728513	56	22-Mar-1964	Female	TET2				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+37	no	4732455	47	19-Sep-1973	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+38	no	4745349	73	25-Jul-1947	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+39	no	4747420	64	7-Dec-1956	Male					16.5	11.7	5.74	1.3	4.5	241	67.9	515	no	yes	no	no	no	no	no
+40	no	4954713	83	14-Feb-1937	Male					12.4	13.4	12.67	0.3	0.38	285	221.8	420	yes	yes	no	no	no	no	no
+41	yes	4989701	74	5-May-1946	Male	DNMT3A				8.6	1.2	1.19	0.03	0.03	126	18.1	377	yes	yes	no	yes	yes	no	no
+42	no	5004838	26	13-Jan-1995	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+43	yes	5149307	68	5-Apr-1952	Female	TET2	KRAS			13.3	7.1	4.37	1.21	1.37	287	12.1	205	yes	yes	no	no	no	no	no
+44	no	5197352	31	2-Apr-1989	Male					15	14.8	10.21	1.19	3.23	317	1240	224	no	yes	no	no	no	no	no
+45	yes	5393051	48	8-Apr-1972	Male	KRAS				12.5	7.1	5.34	0.31	1.4	158	149.4	1042	yes	yes	no	no	no	no	no
+46	no	5440073	70	21-Mar-1950	Female					10.4	8	5.98	0.58	0.98	247	86.5	277	no	yes	no	no	no	no	no
+47	no	5448364	20	11-Feb-2001	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+48	yes	5489965	51	1-Nov-1969	Female	CREBBP				14.8	3.3	1.49	0.3	1.48	202	NA	NA	no	NA	NA	NA	NA	NA	NA
+49	no	5512824	80	16-Mar-1940	Male					13.5	5.8	3.92	1.21	0.63	109	19.3	57	no	yes	no	no	no	no	no
+50	no	5540368	73	9-Sep-1947	Male					11.4	16.9	13.53	1.34	1.84	209	256.7	850	yes	yes	yes	yes	no	no	no
+51	yes	5542527	90	22-Apr-1930	Male	TET2	CBL			12.5	16.3	12.28	1.76	1.84	284	82.9	274	yes	yes	no	no	no	no	no
+52	no	5557956	54	2-Oct-1966	Female					14.4	5.4	3.35	0.24	1.15	209	44.8	283	yes	yes	no	yes	yes	no	no
+53	no	5571828	73	28-Sep-1947	Female					13.6	6.9	5.16	0.49	0.76	231	70.7	NA	yes	yes	yes	no	no	no	no
+54	no	5577126	39	18-Apr-1981	Male					11.8	5.8	5.15	0.13	0.42	289	124.1	1840	yes	yes	yes	no	no	no	no
+55	yes	5611270	77	1-Oct-1943	Male	ASXL1				13.8	3.6	2.87	0.3	0.38	261	188.6	931	yes	yes	no	yes	yes	yes	no
+56	yes	5626313	61	25-Oct-1959	Female	SF3B1				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+57	no	5686648	65	17-Jul-1955	Male					7.7	4.8	3.82	0.54	0.43	132	230	102	yes	yes	yes	yes	no	no	no
+58	no	5720987	75	5-Nov-1945	Male					9.8	7.6	71.4	11.3	13.9	328	221	1033	yes	yes	no	yes	no	no	yes
+59	no	5747701	34	9-Aug-1986	Female					10.2	6.4	4.2	0.77	1.23	436	164.4	38	yes	yes	no	yes	no	no	no
+60	no	5755215	60	19-Dec-1960	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+61	no	5774751	62	7-Jun-1958	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+62	yes	5819087	67	3-Apr-1953	Male	TET2				13.7	4.2	3.06	0.31	0.8	127	34.9	773	yes	yes	no	no	no	no	no
+63	no	5832764	78	3-Aug-1942	Male					10.2	6.7	186	5.14	0.57	0.91	95.8	167	yes	yes	no	yes	no	no	yes
+64	no	5911217	62	8-Oct-1958	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+65	no	5941204	63	9-Aug-1957	Female					8.7	4.4	3.77	0.31	0.27	214	29.7	548	yes	yes	yes	yes	no	no	no
+66	no	5964266	71	7-Apr-1949	Male					15.5	5.2	4.3	0.22	0.59	109	48.6	501	yes	yes	no	no	no	no	yes
+67	yes	6019909	81	4-Jan-1939	Male	DNMT3A	SF3B1			11.3	11.2	10.35	0.36	0.46	449	400	1405	yes	yes	yes	yes	yes	yes	yes
+68	no	6106124	53	6-Sep-1967	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+69	no	6226733	26	30-Oct-1994	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+70	no	6329925	36	26-Feb-1984	Female					13.1	6.4	4.02	1.81	0.41	177	3	65	no	yes	no	no	no	no	no
+71	no	6346311	42	2-Jul-1978	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+72	no	6348619	93	29-Jul-1927	Female					15.8	18.6	15.67	1.2	1.63	342	81.4	760	yes	yes	no	no	no	no	no
+73	no	6389834	38	13-Jul-1982	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+74	no	6469255	36	5-Sep-1984	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+75	no	6524009	51	5-Sep-1969	Male					16.1	8.6	7.45	0.47	0.67	141	45.3	1422	yes	yes	yes	yes	no	no	no
+76	no	6529556	78	26-Feb-1942	Male					12.6	5.6	3.86	0.32	1.35	222	95	1057	yes	yes	no	no	no	no	no
+77	yes	6529626	72	30-Jun-1948	Female	DNMT3A	DNMT3A			NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+78	no	6532820	65	30-Sep-1955	Male					12.8	7	6.02	0.3	0.63	100	124.8	354	yes	yes	no	yes	yes	no	no
+79	yes	6550431	48	20-Nov-1972	Male	STAT3				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+80	no	6584896	74	31-Jul-1946	Male					9.1	6.9	6	0.15	0.69	145	3	298	no	yes	yes	no	no	no	no
+81	no	6589242	60	25-Mar-1960	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+82	no	6610652	52	12-Aug-1968	Male					14.1	4.7	3.48	0.44	0.88	150	96.6	1031	yes	yes	no	yes	no	no	no
+83	yes	6614412	59	18-Jun-1961	Female	MPL				10.2	4.4	2.9	0.27	1.22	121	40	556	yes	yes	no	yes	no	no	no
+84	no	6639437	52	30-Nov-1968	Male					14.7	7.1	6.5	0.41	0.19	189	269	424	yes	yes	no	no	no	no	no
+85	no	6668781	60	6-Feb-1960	Female					14.4	12	10.13	0.84	0.87	179	61.6	136	yes	yes	no	no	no	no	no
+86	no	6670860	69	14-Sep-1951	Female					12.4	4.9	3.34	0.33	1.19	264	101.8	128	yes	yes	no	yes	no	no	no
+87	no	6753794	60	18-Feb-1960	Male					15.2	6.5	5.88	0.32	0.31	153	76.6	462	yes	yes	no	yes	no	no	yes
+88	no	6755240	64	30-Apr-1956	Male					14.9	8.5	7.71	0.44	0.27	232	115.6	985	yes	yes	no	yes	no	no	no
+89	yes	6845071	72	10-Jul-1948	Male	PPM1D				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+90	no	6885890	53	17-Jul-1967	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+91	no	6891779	53	13-Feb-1967	Male					14.2	2.1	1.4	0.12	0.58	163	79.2	591	no	yes	no	no	no	no	no
+92	no	6894469	60	21-Aug-1960	Male					13.5	7.5	5.95	0.53	0.84	216	117.1	99	yes	yes	no	no	no	no	no
+93	no	6930652	48	21-Mar-1972	Female					14.6	5.8	3.58	0.33	1.39	231	14.5	NA	yes	yes	no	yes	no	no	no
+94	no	6995129	61	5-Dec-1959	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+95	no	7047440	62	23-Jun-1958	Male					15.7	5.4	3.24	0.66	1.43	160	NA	NA	NA	NA	NA	NA	NA	NA	NA
+96	no	7174324	38	14-Jun-1982	Male					15	5.6	3.18	0.79	1.48	259	NA	NA	NA	NA	NA	NA	NA	NA	NA
+97	no	7216234	22	19-Mar-1998	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+98	no	7265106	31	7-Mar-1989	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+99	no	7301276	41	5-Jul-1979	Female					12.2	4.2	2.89	0.24	1.04	183	56.8	94	yes	yes	no	yes	no	no	no
+100	yes	7330630	70	15-Dec-1950	Male	ASXL1	KIT	ASXL1	SF3B1	12.8	8	5.6	0.69	1.6	199	66.9	NA	yes	yes	no	yes	no	no	no
+101	no	7428945	30	15-Nov-1990	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+102	yes	7510341	59	26-Jan-1962	Male	TET2				13.6	3.6	2.31	0.22	1.03	119	23.1	509	NA	NA	NA	NA	NA	NA	NA
+103	no	7580740	71	14-Sep-1949	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+104	no	7581284	64	2-Jun-1956	Male					16.3	5.3	3.8	0.57	0.93	88	45.6	258	no	yes	yes	no	no	no	no
+105	no	7592837	26	26-Oct-1994	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+106	no	7628453	19	7-Aug-2001	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+107	yes	7648939	69	13-Sep-1951	Male	DNMT3A				16.4	4	3.1	0.21	0.61	114	61.2	611	yes	yes	no	no	yes	no	no
+108	no	7654775	54	8-Sep-1966	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+109	no	7675503	57	5-Oct-1963	Female					13.7	2.9	1.28	0.28	1.33	202	19.6	206	yes	yes	no	yes	no	no	yes
+110	no	7684704	52	2-Jul-1968	Female					12.6	6.5	5.04	0.16	1.22	177	38.4	342	yes	yes	no	yes	no	no	no
+111	yes	7690729	76	25-Nov-1944	Male	JAK2	DNMT3A			14.8	6.7	5.82	0.37	0.5	155	133.9	481	yes	yes	no	yes	no	no	no
+112	no	7693765	66	11-May-1954	Male					14.9	10.3	8.84	0.44	0.89	220	147	614	yes	yes	no	yes	no	no	no
+113	no	7703761	77	24-Mar-1943	Female					13.7	9.5	7.23	0.93	1.16	609	244.3	456	yes	yes	no	yes	no	no	yes
+114	yes	7723531	60	26-Dec-1959	Male	TP53				7.1	1.1	0.82	0.14	0.16	97	250	3686	yes	yes	yes	yes	no	no	no
+115	yes	7731244	42	21-Mar-1978	Male	DNMT3A				14.9	5	3.22	0.98	0.81	197	48.9	219	yes	yes	yes	yes	no	no	no
+116	yes	7757421	81	12-Oct-1939	Female	TP53	DNMT3A	PPM1D		13.1	6.6	5.65	0.47	0.45	144	280	470	yes	yes	no	yes	no	no	no
+117	yes	7778263	76	26-Dec-1944	Male	DNMT3A	DNMT3A			9.3	3.8	3.11	0.36	0.32	127	103.2	407	yes	yes	yes	yes	yes	no	no
+118	yes	7779610	71	8-Aug-1949	Male	MPL				12.3	10.4	8.71	0.8	0.74	219	183.2	245	yes	yes	no	yes	yes	no	no
+119	no	7794337	56	22-Sep-1964	Male					16.3	7.3	5.7	0.95	0.58	335	130	2751	yes	yes	yes	yes	no	no	no
+120	no	7826423	90	12-Apr-1930	Female					12.5	5.9	4.82	0.61	0.41	124	81.9	453	yes	yes	no	yes	no	no	no
+121	yes	7833355	59	5-Feb-1961	Male	ASXL1				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+122	no	7846190	50	27-Mar-1970	Female					12.1	12.4	10.47	0.76	1	226	74.5	82	yes	yes	no	yes	yes	no	no
+123	yes	7863437	69	11-Dec-1951	Male	MPL				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+124	no	7866635	65	23-Sep-1955	Male					13.8	9	7.63	0.45	0.89	194	3	84	no	yes	no	no	no	no	yes
+125	no	7875147	68	28-Feb-1952	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+126	yes	7889680	83	30-Sep-1937	Male	SF3B1	ASXL1			11.8	4.6	2.8	0.95	0.79	157	20.1	437	yes	yes	yes	yes	yes	no	no
+127	no	7891104	24	9-Mar-1996	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+128	no	7924098	73	30-Dec-1946	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+129	no	7932161	56	12-Nov-1964	Male					13.8	6.7	4.76	0.49	1.31	269	70.9	NA	NA	NA	NA	NA	NA	NA	NA
+130	no	7935376	84	18-May-1936	Female					13.3	4.9	3.73	0.5	0.63	185	31.7	88	yes	yes	no	yes	no	no	yes
+131	no	7950457	61	26-Feb-1959	Male					9.6	7.9	7.29	0.17	0.34	133	193.1	4157	yes	yes	yes	yes	yes	no	no
+132	no	7970412	57	5-Nov-1963	Female					11.4	5.3	3.83	0.41	0.99	151	14.4	2264	yes	yes	no	yes	yes	no	no
+133	no	7975523	60	18-Aug-1960	Male					15.1	6.3	4.78	0.27	1.24	178	96.3	1119	yes	NA	no	no	no	no	no
+134	no	8555404	58	2-Jun-1962	Male					14.2	7.6	6.31	0.26	0.83	119	208.6	564	yes	yes	no	yes	yes	no	yes
+135	no	8616743	35	3-Dec-1985	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+136	no	8974357	29	12-Apr-1991	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+137	no	9125798	58	10-Mar-1962	Male					10.9	5.9	5.43	0.12	0.3	130	126	2225	yes	yes	no	yes	yes	no	no
+138	no	9188741	19	14-Oct-2001	Male					16.4	11.1	8.96	1.03	0.89	214	70	NA	no	NA	no	no	no	no	no
+139	no	9196160	53	10-Aug-1967	Male					9.3	5.1	4.32	0.15	0.64	160	120.9	628	yes	yes	yes	yes	yes	no	no
+140	no	9209047	55	18-Aug-1965	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+141	no	9460511	27	16-Feb-1994	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+142	no	9800302	25	1-Jul-1995	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+143	yes	10148835	60	29-Jan-1961	Male	TP53				14.4	3.9	3.17	0.24	0.49	148	66.1	534	yes	yes	NA	NA	NA	NA	NA
+144	no	10151604	45	27-Jul-1975	Male					14.3	14.2	10.19	1.56	2.12	363	125.3	355	yes	yes	no	yes	no	no	yes
+145	no	10559956	27	7-Feb-1994	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+146	no	10730327	56	18-Apr-1964	Male					13.9	8	6.2	0.53	1.06	65	262.3	NA	yes	yes	yes	yes	no	no	no
+147	no	10775149	59	20-Jul-1961	Male					15.8	11.9	10.14	0.44	1.26	176	247.3	784	yes	yes	no	yes	yes	no	no
+148	yes	10775646	58	7-Jul-1962	Female	MPL				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+149	no	10821823	44	15-Aug-1976	Male					13.7	5.8	4.57	0.83	0.35	195	323.8	NA	yes	yes	no	yes	no	no	no
+150	no	10847576	70	26-Jun-1950	Female					12.2	6.8	5.38	0.31	1.04	144	176.7	2325	yes	yes	yes	yes	yes	yes	no
+151	no	10852690	65	13-May-1955	Female					13.9	7.7	4.74	0.87	1.89	289	13	123	no	NA	no	no	no	no	NA
+152	no	10861925	47	25-Feb-1973	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+153	no	10862667	74	21-Oct-1946	Female					13.1	5.8	4.6	0.29	0.84	289	149.1	785	yes	yes	no	yes	yes	no	no
+154	no	10862868	45	14-Jul-1975	Female					15.4	4.2	2.26	0.49	1.4	243	NA	NA	NA	NA	NA	NA	NA	NA	NA
+155	no	10868974	27	3-Oct-1993	Male					12.6	2.7	NA	NA	NA	211	29.9	155	yes	yes	no	yes	no	no	no
+156	no	10879649	49	2-Oct-1971	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+157	no	10879755	26	11-Jun-1994	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+158	yes	10889755	77	27-Jan-1944	Female	DNMT3A				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+159	yes	10891839	53	21-Dec-1967	Male	DNMT3A				15.9	15.1	NA	NA	NA	308	74.5	321	no	NA	no	no	no	no	no
+160	no	10906438	45	7-May-1975	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+161	no	12156299	61	28-Nov-1959	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+162	no	12206475	50	23-Apr-1970	Male					14.5	6.3	4.73	0.62	0.83	141	NA	NA	NA	NA	NA	NA	NA	NA	NA
+163	no	12343965	50	28-Oct-1970	Male					13.6	1.7	NA	NA	NA	129	372.4	2293	yes	yes	no	yes	no	no	no
+164	no	12371379	41	1-Apr-1979	Male					15.8	3.9	3.08	0.23	0.57	125	82.6	1072	yes	yes	no	yes	no	no	no
+165	no	12374285	47	6-Nov-1973	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+166	no	12395434	68	2-Nov-1952	Male					11.6	3.5	2.9	0.4	0.1	122	5.3	1952	yes	yes	yes	yes	yes	yes	no
+167	no	12439542	52	14-Sep-1968	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+168	yes	12466687	45	26-May-1975	Male	DNMT3A				13.6	13.6	11.76	1.41	0.31	217	136	456	no	NA	no	no	no	no	no
+169	no	12496600	39	5-Feb-1981	Female					11.3	5	3.38	0.29	1.3	153	57.7	341	yes	yes	no	yes	no	no	no
+170	no	12595154	33	10-Mar-1987	Male					16.4	13.2	11.67	0.5	1.04	440	151.7	663	yes	yes	no	yes	no	no	no
+171	no	12658163	25	14-Dec-1995	Male					9.1	9.7	6.66	0.78	2.22	306	108.1	822	yes	yes	no	yes	no	no	no
+172	no	12661464	50	11-Sep-1970	Male					12.3	24	22.3	0.22	1.38	163	187.2	3601	yes	yes	no	yes	yes	no	yes
+173	no	12664150	65	24-Jan-1955	Female					10.1	25	23.12	0.96	0.73	299	152.6	691	yes	yes	no	yes	yes	no	no
+174	yes	12671250	49	19-Mar-1971	Male	EZH2				14	5.1	3.36	0.44	1.27	228	61.5	303	yes	yes	no	yes	no	no	no
+175	no	12671264	65	9-Jan-1955	Female					10.5	9.4	7.71	0.79	0.85	287	249.8	254	yes	yes	no	yes	no	no	no
+176	no	12671989	43	8-May-1977	Male					13.6	16.8	15.81	0.32	0.57	162	400	1036	yes	yes	yes	yes	yes	yes	yes
+177	no	12675450	43	16-May-1977	Male					15.2	3.1	1.83	0.32	0.98	189	79.5	1611	no	NA	no	no	no	no	no
+178	no	12675486	22	17-Apr-1998	Female					14.7	7.5	3.48	0.44	2.05	311	0	90	yes	yes	no	yes	no	no	no
+179	no	12685494	60	19-Jan-1960	Female					12.8	4.2	2.54	0.39	1.28	160	74.2	307	yes	yes	no	yes	no	no	no
+180	yes	12702080	68	11-Mar-1952	Female	DNMT3A				12.4	5.1	4.08	0.3	0.66	428	46.7	858	yes	yes	no	yes	yes	no	no
+181	no	12711624	40	20-May-1980	Male					18.6	17.5	14.85	0.98	1.63	420	381.7	1345	yes	yes	no	yes	yes	no	no
+182	no	12711943	23	31-Jul-1997	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+183	yes	12717262	78	21-Jan-1943	Female	TET2				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+184	no	12724242	20	5-Jan-2001	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+185	no	12724447	61	5-Jun-1959	Male					9.1	2.8	2.03	0.25	0.47	119	307.3	2469	yes	yes	no	yes	yes	no	yes
+186	no	12727224	52	13-Sep-1968	Male					15.2	4.4	2.41	0.26	0.98	219	82.2	564	yes	yes	yes	yes	yes	yes	no
+187	no	12734730	73	21-Jul-1947	Female					13.9	3.1	2.22	0.11	0.73	143	131.5	733	yes	yes	no	yes	no	no	no
+188	no	12735161	50	27-Nov-1970	Male					13.9	8.7	7.99	0.1	0.59	195	333.3	2414	yes	yes	no	yes	no	no	no
+189	no	12735898	44	2-Jan-1977	Male					13.7	3	1.74	0.3	1	443	20.7	615	no	NA	no	no	no	no	no
+190	no	12735903	53	23-Jun-1967	Female					12.5	6.6	4.5	0.49	1.36	490	125.4	1052	yes	yes	no	yes	no	no	no
+191	no	12737048	28	19-May-1992	Female					14.9	4.2	2.7	0.27	1.25	201	23.2	205	yes	yes	no	yes	no	no	no
+192	no	12742376	76	5-Feb-1944	Male					13.7	0.8	0.26	0.17	0.31	113	44	615	yes	yes	no	yes	no	no	no
+193	no	12746011	25	22-Mar-1995	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+194	no	12748328	43	24-Jun-1977	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+195	no	12762385	69	7-Aug-1951	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+196	no	1691050	71	3-Sep-1949	Male					10.8	4.3	2.49	0.64	1.09	83	NA	NA	no	NA	NA	NA	NA	NA	NA
+197	no	2005262	66	22-Oct-1954	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+198	no	2181406	63	24-Feb-1957	Female					10	5	2.8	0.62	1.43	424	154.7	1050	yes	yes	no	yes	no	no	no
+199	no	2364291	60	24-Feb-1960	Male					14.7	5	4.19	0.3	0.46	215	92.8	794	yes	yes	no	yes	yes	no	no
+200	no	2399766	70	24-Jun-1950	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+201	no	1988786	66	19-Jul-1954	Female					12.6	9.5	6.84	0.65	1.86	252	NA	NA	no	NA	NA	NA	NA	NA	NA
+202	yes	2102269	80	6-Sep-1940	Female	TET2				12.6	5.7	4.12	0.44	1.12	187	16.6	110	yes	yes	no	yes	no	no	no
+203	yes	2397152	83	10-Sep-1937	Female	DNMT3A				11	6.4	4.21	0.81	1.32	196	66.3	186	no	NA	no	no	no	no	no
+204	no	2553839	56	22-Jan-1965	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+205	yes	2880385	77	7-Aug-1943	Male	SF3B1				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+206	no	3263723	62	17-Nov-1958	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+207	yes	3299222	58	17-Nov-1962	Female	JAK2				14.4	7.1	4.35	0.58	1.79	467	NA	NA	NA	NA	NA	NA	NA	NA	NA
+208	no	3387761	62	21-Aug-1958	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+209	yes	3390083	78	16-Nov-1942	Male	SETD2				12.4	11.6	7.1	0.61	8.38	286	67.8	531	yes	yes	no	yes	yes	no	yes
+210	no	3835584	79	17-Dec-1941	Male					13.4	5	NA	NA	NA	204	91.7	1223	yes	yes	no	yes	yes	no	no
+211	no	3971145	57	30-Sep-1963	Female	DDX41				13	8.7	4.3	0.65	3.22	375	NA	NA	NA	NA	NA	NA	NA	NA	NA
+212	no	3994168	33	31-Oct-1987	Female					12.8	5.8	4.32	0.17	1.29	346	175.1	141	yes	yes	no	yes	yes	no	no
+213	no	4058240	64	4-Sep-1956	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+214	yes	4691818	79	6-Nov-1941	Male	PPM1D				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+215	yes	5094333	69	23-Feb-1951	Female	DNMT3A	DNMT3A			12.1	9.1	8.04	0.49	0.59	123	108.9	92	yes	yes	no	yes	yes	no	yes
+216	no	5195592	48	30-Sep-1972	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+217	no	5341676	65	29-Mar-1956	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+218	no	5416663	37	8-Feb-1984	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+219	no	5500789	73	26-Aug-1947	Male					15.6	4	2.74	0.43	0.81	165	49.7	308	yes	yes	no	yes	no	no	no
+220	no	5599760	50	28-Apr-1970	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+221	no	6023597	44	16-Aug-1976	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+222	no	6218910	61	2-Aug-1959	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+223	no	6311433	52	9-May-1968	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+224	no	6660363	82	29-Mar-1938	Female					11.9	5.2	5.38	0.8	1.35	147	60.9	383	yes	yes	no	yes	no	no	no
+225	no	7179598	35	4-Dec-1985	Female					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+226	yes	7691521	59	24-Apr-1961	Male	SETD2				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+227	no	8201645	67	28-Sep-1953	Male					NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
