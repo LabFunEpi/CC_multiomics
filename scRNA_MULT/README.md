@@ -17,7 +17,7 @@ This directory contains analysis scripts used to analyze the single-cell RNA-seq
 - Azimuth v0.4.3
 - ChromVAR v1.16.0
 - Cicero v1.3.5
-Other R libraries are listed in sessionInfo.txt
+- Other R libraries are listed in sessionInfo.txt
 
 ### Hardware
 Analysis was performed on National Center for Supercomputing Applications (NCSA) high-performance computing cluster - mforge. 
