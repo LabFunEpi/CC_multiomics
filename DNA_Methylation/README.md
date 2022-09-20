@@ -1,0 +1,1 @@
+This directory contains analysis scripts used to analyze the DNA methylation data from the Illumina Infinium Methylation EPIC array.## System requirements### OS and Software dependencies- R v4.1.2- Bedtools v2.27.1### HardwareAnalysis was performed on National Center for Supercomputing Applications (NCSA) high-performance computing cluster - mforge.
