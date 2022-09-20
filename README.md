@@ -1,1 +1,1 @@
-# CC_multiomics
+This repository contains analysis scripts used in the study "Enhancer Deregulation in TET2 Mutant Clonal Hematopoiesis is Associated with Increased COVID-19 Related Inflammation Severity and Mortality". 
