@@ -3,7 +3,8 @@ This directory contains analysis scripts used to analyze the single-cell RNA-seq
 ## System requirements
 ### OS and Software dependencies
 - Red Hat Enterprise Linux Server 7.9 (Maipo)
-- R version 4.1.2
+- R v4.1.2
+- Python v3.7.6
 - Bedtools v2.27.1
 - Cell Ranger v6.0.1 (10x Genomics)
 - Scrublet v0.2.1
