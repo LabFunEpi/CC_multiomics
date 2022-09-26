@@ -1,0 +1,911 @@
+---
+title: "scDNA_final"
+author: "Minsuk Kim"
+date: 02/15/2022"
+output: html_document
+---
+
+
+### Load required packages.  
+```{r, include = FALSE}
+library(Seurat)
+library(readr)
+library(mclust)
+library(ggplot2)
+library(cowplot)
+library(SeuratDisk)
+library(SingleCellExperiment)
+library(SingleR)
+library(celldex)
+library(parallel)
+library(magrittr)
+library(tidyverse)
+library(patchwork)
+```
+
+
+### Generate Tapestri Seurat object.  
+```{r, include = FALSE}
+tapestri_table <- read_csv("input/Master_Tapestri_Relaxed_122221.csv")
+colnames(tapestri_table)[73] <- "FceRIa"
+tapestri_table$Sex[tapestri_table$Sex == "M"] <- "Male"
+tapestri_table$Type[tapestri_table$Sample == "SAMPLE030"] <- "CHIP only"
+tapestri_table <- tapestri_table[tapestri_table$Sample != "SAMPLE019",]
+tapestri_table <- tapestri_table[tapestri_table$Type != "CMML",]
+tapestri_table <- tapestri_table[,colSums(is.na(tapestri_table)) != dim(tapestri_table)[1]]
+
+adt_panel <- c("CD10", "CD117", "CD11b", "CD11c", "CD123", "CD13", "CD138", "CD14", "CD141", "CD16", "CD163", "CD19", "CD1c", "CD2", "CD22", "CD25", "CD3", "CD30", "CD303", "CD304", "CD33", "CD34", "CD38", "CD4", "CD44", "CD45", "CD45RA", "CD45RO", "CD49d", "CD5", "CD56", "CD62L", "CD62P", "CD64", "CD69", "CD7", "CD71", "CD8", "CD83", "CD90", "FceRIa", "HLA-DR", "IgG1", "IgG2a", "IgG2b")
+countMat <- as.matrix(tapestri_table[,adt_panel])
+
+reads_per_cell_cutoff_low  <- 200
+reads_per_cell_cutoff_high <- 50000
+unique_marker_per_cell_cutoff <- 10
+total_read_filter <- (rowSums(countMat) <= reads_per_cell_cutoff_high) & (rowSums(countMat) >= reads_per_cell_cutoff_low)
+unique_marker_filter <- total_read_filter & (rowSums(countMat!=0) >= unique_marker_per_cell_cutoff)
+tapestri_table <- tapestri_table[unique_marker_filter,]
+
+cells_per_cell_cutoff <- 500
+samples_to_remove <- names(table(tapestri_table$Sample))[table(tapestri_table$Sample) < cells_per_cell_cutoff]
+tapestri_table <- tapestri_table[!is.element(tapestri_table$Sample, samples_to_remove),]
+
+countMat <- as.matrix(tapestri_table[,adt_panel])
+rownames(countMat) <- mapply(paste, sep = "-", tapestri_table$Sample, tapestri_table$Barcode)
+
+tapestri_ADT <- CreateSeuratObject(counts = t(countMat), assay = 'ADT', project = 'Tapestri')
+tapestri_ADT$sample  <- tapestri_table$Sample
+tapestri_ADT$barcode <- tapestri_table$Barcode
+tapestri_ADT$group   <- tapestri_table$Type
+tapestri_ADT$age     <- tapestri_table$Age
+tapestri_ADT$sex     <- tapestri_table$Sex
+
+mutation_table <- tapestri_table[,c((which(colnames(tapestri_table) == "QC")+1):(which(colnames(tapestri_table) == "CD10")-1))]
+status_asxl1  <- as.matrix(rep(-1, dim(mutation_table)[1]))
+status_cbl    <- as.matrix(rep(-1, dim(mutation_table)[1]))
+status_dnmt3a <- as.matrix(rep(-1, dim(mutation_table)[1]))
+status_sf3b1  <- as.matrix(rep(-1, dim(mutation_table)[1]))
+status_tet2   <- as.matrix(rep(-1, dim(mutation_table)[1]))
+status_zrsr2  <- as.matrix(rep(-1, dim(mutation_table)[1]))
+
+update_status <- function(current_status, input_status) {
+  if (is.na(input_status)) {
+    new_input_status <- current_status
+  } else {
+    input_status <- as.numeric(input_status)
+    if (current_status == -1) {
+      new_input_status <- input_status
+    } else {
+      update_matrix <- rbind(c(0,1,2,3), c(1,1,2,1), c(2,2,2,2), c(3,1,2,3))
+      new_input_status <- update_matrix[current_status+1,input_status+1]
+    }
+  }
+  return(new_input_status)
+}
+
+for (i in 1:dim(mutation_table)[2]) {
+  str_pos <- unlist(gregexpr(":", colnames(mutation_table))[i])
+  if (str_pos == -1) {
+    str_pos <- unlist(gregexpr(" ", colnames(mutation_table))[i])[1]
+  }
+  gene_name <- substr(colnames(mutation_table)[i], 1, str_pos-1)
+  
+  switch(gene_name,
+  ASXL1  = {
+    for (j in 1:dim(mutation_table)[1]){
+      status_asxl1[j]  <- update_status(status_asxl1[j],  mutation_table[j,i])
+    }
+  },
+  CBL   = {
+    for (j in 1:dim(mutation_table)[1]){
+      status_cbl[j]   <- update_status(status_cbl[j],     mutation_table[j,i])
+    }
+  },
+  DNMT3A = {
+    for (j in 1:dim(mutation_table)[1]){
+      status_dnmt3a[j] <- update_status(status_dnmt3a[j], mutation_table[j,i])
+    }
+  },
+  SF3B1  = {
+    for (j in 1:dim(mutation_table)[1]){
+      status_sf3b1[j]  <- update_status(status_sf3b1[j],  mutation_table[j,i])
+    }
+  },
+  TET2   = {
+    for (j in 1:dim(mutation_table)[1]){
+      status_tet2[j]   <- update_status(status_tet2[j],   mutation_table[j,i])
+    }
+  },
+  ZRSR2  = {
+    for (j in 1:dim(mutation_table)[1]){
+      status_zrsr2[j]  <- update_status(status_zrsr2[j],  mutation_table[j,i])
+    }
+  },
+  {
+    stop("Mutated gene is not in the list")
+  }
+  )
+}
+
+tapestri_ADT$status_asxl1  <- status_asxl1
+tapestri_ADT$status_cbl    <- status_cbl
+tapestri_ADT$status_dnmt3a <- status_dnmt3a
+tapestri_ADT$status_sf3b1  <- status_sf3b1
+tapestri_ADT$status_tet2   <- status_tet2
+tapestri_ADT$status_zrsr2  <- status_zrsr2
+
+status_asxl1 [status_asxl1  == -1] <- 0
+status_cbl   [status_cbl    == -1] <- 0
+status_dnmt3a[status_dnmt3a == -1] <- 0
+status_sf3b1 [status_sf3b1  == -1] <- 0
+status_tet2  [status_tet2   == -1] <- 0
+status_zrsr2 [status_zrsr2  == -1] <- 0
+status_asxl1 [status_asxl1  ==  3] <- 0
+status_cbl   [status_cbl    ==  3] <- 0
+status_dnmt3a[status_dnmt3a ==  3] <- 0
+status_sf3b1 [status_sf3b1  ==  3] <- 0
+status_tet2  [status_tet2   ==  3] <- 0
+status_zrsr2 [status_zrsr2  ==  3] <- 0
+status_chip_all <- status_asxl1 + status_cbl + status_dnmt3a + status_sf3b1 + status_tet2 + status_zrsr2
+status_chip_all[status_chip_all > 1] <- 1
+status_asxl1 [status_asxl1  ==  1] <- 0
+status_cbl   [status_cbl    ==  1] <- 0
+status_dnmt3a[status_dnmt3a ==  1] <- 0
+status_sf3b1 [status_sf3b1  ==  1] <- 0
+status_tet2  [status_tet2   ==  1] <- 0
+status_zrsr2 [status_zrsr2  ==  1] <- 0
+status_chip_homo <- status_asxl1 + status_cbl + status_dnmt3a + status_sf3b1 + status_tet2 + status_zrsr2
+status_chip_homo[status_chip_homo > 1] <- 1
+tapestri_ADT$status_chip_all  <- status_chip_all
+tapestri_ADT$status_chip_homo <- status_chip_homo
+
+saveRDS(tapestri_ADT, file = "int_rds/tapestri_raw_counts.rds")
+```
+
+
+### CLR transformation and noise removal using dsb step II.  
+```{r, include = FALSE}
+tapestri <- readRDS("int_rds/tapestri_raw_counts.rds")
+tapestri_mat <- t(as.matrix(GetAssayData(tapestri, slot = "counts")))
+tapestri_mat <- 1e6 * t(apply(tapestri_mat, 1, "/", colSums(tapestri_mat))) + 0.1
+tapestri_mat <- log(tapestri_mat)
+tapestri_mat <- apply(tapestri_mat, 2, "-", apply(tapestri_mat, 1, mean))
+tapestri_mat <- t(tapestri_mat)
+tapestri[["CLR"]] <- CreateAssayObject(counts = tapestri_mat)
+
+# From "https://github.com/niaid/dsb/blob/master/R/dsb.r"
+# step II calculate dsb technical component and regress out of ambient corrected values
+# calculating dsb technical component for each cell to remove cell to cell technical noise
+isotype.control <- c("IgG1", "IgG2a", "IgG2b")
+get_cellwise_background_mean <- function(norm_adt) {
+  g = mclust::Mclust(norm_adt, G=2, warn = FALSE, verbose = FALSE)
+  return(g$parameters$mean[1])
+}
+get_noise_vector <- function(noise_matrix) {
+  g = stats::prcomp(t(noise_matrix), scale = TRUE)
+  return(g$x[ ,1])
+}
+cellwise_background_mean = apply(tapestri_mat, 2, get_cellwise_background_mean)
+gc()
+noise_matrix = rbind(tapestri_mat[isotype.control, ], cellwise_background_mean)
+noise_vector = get_noise_vector(noise_matrix)
+output_matrix = limma::removeBatchEffect(tapestri_mat, covariates = noise_vector)
+tapestri_mat <- output_matrix[setdiff(rownames(output_matrix),isotype.control), ]
+tapestri[["DSB"]] <- CreateAssayObject(counts = tapestri_mat)
+
+DefaultAssay(tapestri) <- "DSB"
+saveRDS(tapestri, file = "int_rds/tapestri_clr_dsb.rds")
+```
+
+
+### Dimensionality reduction, clustering, and UMAP analysis.  
+```{r, include = FALSE}
+tapestri <- readRDS("int_rds/tapestri_clr_dsb.rds")
+
+VariableFeatures(tapestri) <- rownames(tapestri[["DSB"]])
+tapestri <- ScaleData(tapestri, features = VariableFeatures(object = tapestri), do.scale = FALSE, do.center = FALSE)
+tapestri <- RunPCA(tapestri, features = VariableFeatures(object = tapestri))
+tapestri <- FindNeighbors(tapestri, dims = 1:dim(tapestri@reductions$pca)[2]) # dim(tapestri@reductions$pca)[2]
+tapestri <- FindClusters(tapestri, resolution = 0.8, verbose = FALSE)
+tapestri <- RunUMAP(tapestri, dims = 1:dim(tapestri@reductions$pca)[2]) # dim(tapestri@reductions$pca)[2]
+
+plot1 <- ggplot(data.frame(tapestri[["umap"]][[]], cluster = tapestri$seurat_clusters), aes(x=UMAP_1, y=UMAP_2, color=cluster)) +
+    geom_point(size=1, stroke=0.1, shape=16) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot()
+ggsave(plot = plot1, width = 10, height = 10, dpi = 300,
+       filename = "figure/umap_seurat_clusters.pdf", useDingbats = FALSE)
+
+saveRDS(tapestri, file = "int_rds/tapestri_umap.rds")
+```
+
+
+### Load the Azimuth reference, re-annotate using SingleR, and extract ADT data.  
+```{r, include = FALSE}
+azimuth <- LoadH5Seurat("input/pbmc_multimodal.h5seurat")
+
+azimuth_query <- as.SingleCellExperiment(azimuth)
+monaco_ref <- MonacoImmuneData()
+azimuth_pred <- SingleR(test = azimuth_query, ref = monaco_ref, labels = monaco_ref$label.fine)
+azimuth$celltype.monaco <- azimuth_pred$labels
+
+DefaultAssay(azimuth) <- "ADT"
+azimuth[["SCT"]] <- NULL
+saveRDS(azimuth, file = "int_rds/azimuth_singler_adt.rds")
+```
+
+
+### Co-process Tapestri and Azimuth datasets for comparison.  
+```{r, include = FALSE}
+tapestri <- readRDS("int_rds/tapestri_umap.rds")
+DefaultAssay(tapestri) <- "ADT"
+panel_tapestri <- rownames(tapestri[["ADT"]])
+
+azimuth <- readRDS("int_rds/azimuth_singler_adt.rds")
+panel_azimuth <- rownames(azimuth[["ADT"]])
+
+panel_1_to_1 <- intersect(panel_tapestri, panel_azimuth)
+panel_1_to_2_tapestri <- c("CD11b",   "CD138",   "CD3",   "CD38",   "CD4",   "CD44",   "CD45",   "CD56") 
+panel_1_to_2_azimuth1 <- c("CD11b-1", "CD138-1", "CD3-1", "CD38-1", "CD4-1", "CD44-1", "CD45-1", "CD56-1")
+panel_1_to_2_azimuth2 <- c("CD11b-2", "CD138-2", "CD3-2", "CD38-2", "CD4-2", "CD44-2", "CD45-2", "CD56-2")
+# No match for "CD10", "CD33", "CD5", "CD62L", "CD7", "FceRIa"
+
+panel_isotype_tapestri <- c("IgG1", "IgG2b", "IgG2a")
+panel_isotype_azimuth  <- c("Rat-IgG1-1", "Rat-IgG1-2", "Rat-IgG2b")
+
+panel_tapestri_selected <- c(panel_1_to_1, panel_1_to_2_tapestri, panel_isotype_tapestri)
+panel_azimuth_selected  <- c(panel_1_to_1, panel_1_to_2_azimuth1, panel_1_to_2_azimuth2, panel_isotype_azimuth)
+
+tapestri_mat <- t(as.matrix(GetAssayData(tapestri, slot = "counts")[panel_tapestri_selected, ]))
+tapestri_mat <- 1e6 * t(apply(tapestri_mat, 1, "/", colSums(tapestri_mat))) + 0.1
+tapestri_mat <- log(tapestri_mat)
+tapestri_mat <- apply(tapestri_mat, 2, "-", apply(tapestri_mat, 1, mean))
+tapestri_mat <- t(tapestri_mat)
+
+azimuth_mat <- t(as.matrix(GetAssayData(azimuth, slot = "counts")[panel_azimuth_selected, ]))
+azimuth_mat <- 1e6 * t(apply(azimuth_mat, 1, "/", colSums(azimuth_mat))) + 0.1
+for (i in 1:length(panel_1_to_2_azimuth1)) {
+  panel_same_antigen <- log10(azimuth_mat[,c(panel_1_to_2_azimuth1[i], panel_1_to_2_azimuth2[i])])
+  panel_same_antigen <- 10^apply(panel_same_antigen, 1, mean)
+  azimuth_mat[,panel_1_to_2_azimuth1[i]] <- panel_same_antigen
+  colnames(azimuth_mat)[which(colnames(azimuth_mat) == panel_1_to_2_azimuth1[i])] <- panel_1_to_2_tapestri[i]
+  azimuth_mat <- azimuth_mat[,-which(colnames(azimuth_mat) == panel_1_to_2_azimuth2[i])]
+}
+azimuth_mat <- log(azimuth_mat)
+azimuth_mat <- apply(azimuth_mat, 2, "-", apply(azimuth_mat, 1, mean))
+azimuth_mat <- t(azimuth_mat)
+
+# From "https://github.com/niaid/dsb/blob/master/R/dsb.r"
+# step II calculate dsb technical component and regress out of ambient corrected values
+# calculating dsb technical component for each cell to remove cell to cell technical noise
+get_cellwise_background_mean <- function(norm_adt) {
+  g = mclust::Mclust(norm_adt, G=2, warn = FALSE, verbose = FALSE)
+  return(g$parameters$mean[1])
+}
+get_noise_vector <- function(noise_matrix) {
+  g = stats::prcomp(t(noise_matrix), scale = TRUE)
+  return(g$x[ ,1])
+}
+
+cellwise_background_mean = apply(tapestri_mat, 2, get_cellwise_background_mean)
+gc()
+noise_matrix = rbind(tapestri_mat[panel_isotype_tapestri, ], cellwise_background_mean)
+noise_vector = get_noise_vector(noise_matrix)
+output_matrix = limma::removeBatchEffect(tapestri_mat, covariates = noise_vector)
+tapestri_mat <- output_matrix[setdiff(rownames(output_matrix),panel_isotype_tapestri), ]
+
+cellwise_background_mean = apply(azimuth_mat, 2, get_cellwise_background_mean)
+gc()
+noise_matrix = rbind(azimuth_mat[panel_isotype_azimuth, ], cellwise_background_mean)
+noise_vector = get_noise_vector(noise_matrix)
+output_matrix = limma::removeBatchEffect(azimuth_mat, covariates = noise_vector)
+azimuth_mat <- output_matrix[setdiff(rownames(output_matrix),panel_isotype_azimuth), ]
+
+tapestri[["COMP"]] <- CreateAssayObject(counts = tapestri_mat)
+DefaultAssay(tapestri) <- "COMP"
+saveRDS(tapestri, file = "int_rds/tapestri_comparison_ready.rds")
+
+azimuth[["COMP"]] <- CreateAssayObject(counts = azimuth_mat)
+DefaultAssay(azimuth) <- "COMP"
+saveRDS(azimuth, file = "int_rds/azimuth_comparison_ready.rds")
+```
+
+
+### Compare Azimuth and Tapestri data - Part 1.  
+```{r, include = FALSE}
+tapestri <- readRDS("int_rds/tapestri_comparison_ready.rds")
+azimuth  <- readRDS("int_rds/azimuth_comparison_ready.rds")
+
+tapestri_mat <- t(as.matrix(GetAssayData(tapestri, slot = "counts")))
+azimuth_mat  <- t(as.matrix(GetAssayData(azimuth,  slot = "counts")))
+
+numCores <- detectCores()
+
+start_idx <- 1
+tapestri_list <- list()
+for (i in 1:numCores) {
+  end_idx <- floor(i * (dim(tapestri_mat)[1]/numCores))
+  tapestri_list[[i]] <- tapestri_mat[c(start_idx:end_idx),]
+  start_idx <- end_idx + 1
+}
+
+my_dist <- function(tapestri_part, azimuth_all, azimuth_ref_celltype1, azimuth_ref_celltype2) {
+  top_neighbors_celltype_azi_l2 <- c()
+  top_neighbors_celltype_monaco <- c()
+  for (i in 1:dim(tapestri_part)[1]) {
+    dist_tap_azi <- apply(azimuth_all, 1, "-", tapestri_part[i,])
+    dist_tap_azi <- t(dist_tap_azi^2)
+    dist_tap_azi <- rowSums(dist_tap_azi)
+    top_neighbors <- rownames(azimuth_all[order(dist_tap_azi)[1:20],])
+    top_neighbors_celltype_azi_l2 <- rbind(top_neighbors_celltype_azi_l2, azimuth_ref_celltype1[top_neighbors])
+    top_neighbors_celltype_monaco <- rbind(top_neighbors_celltype_monaco, azimuth_ref_celltype2[top_neighbors])
+  }
+  colnames(top_neighbors_celltype_azi_l2) <- c()
+  rownames(top_neighbors_celltype_azi_l2) <- rownames(tapestri_part)
+  top_neighbors_celltype_azi_l2 <- cbind(rownames(top_neighbors_celltype_azi_l2), top_neighbors_celltype_azi_l2)
+  write_csv2(as.data.frame(top_neighbors_celltype_azi_l2), 
+             paste(c("int_corr/top_neighbors_celltype_azi_l2_", rownames(tapestri_part)[1], ".csv"), collapse = ""))
+  colnames(top_neighbors_celltype_monaco) <- c()
+  rownames(top_neighbors_celltype_monaco) <- rownames(tapestri_part)
+  top_neighbors_celltype_monaco <- cbind(rownames(top_neighbors_celltype_monaco), top_neighbors_celltype_monaco)
+  write_csv2(as.data.frame(top_neighbors_celltype_monaco), 
+             paste(c("int_corr/top_neighbors_celltype_monaco_", rownames(tapestri_part)[1], ".csv"), collapse = ""))
+}
+
+azimuth_celltype.l2     <- azimuth$celltype.l2
+azimuth_celltype.monaco <- azimuth$celltype.monaco
+
+rm(list = setdiff(ls(), c("tapestri_list", "my_dist", "azimuth_mat", "azimuth_celltype.l2", "azimuth_celltype.monaco", "numCores")))
+mclapply(tapestri_list, my_dist, azimuth_all = azimuth_mat,
+         azimuth_ref_celltype1 = azimuth_celltype.l2,
+         azimuth_ref_celltype2 = azimuth_celltype.monaco,
+         mc.cores = numCores/2)
+```
+
+
+### Compare Azimuth and Tapestri data - Part 2.  
+```{r, include = FALSE}
+tapestri <- readRDS("int_rds/tapestri_comparison_ready.rds")
+
+top_neighbors_celltype_file_list <- list.files(path = "int_corr/")
+top_neighbors_celltype_azi_l2_file_list <- top_neighbors_celltype_file_list[(unlist(gregexpr("_azi_l2_", top_neighbors_celltype_file_list)) > 0)]
+top_neighbors_celltype_monaco_file_list <- top_neighbors_celltype_file_list[(unlist(gregexpr("_monaco_", top_neighbors_celltype_file_list)) > 0)]
+
+top_neighbors_celltype <- c()
+for (i in 1:length(top_neighbors_celltype_azi_l2_file_list)) {
+  top_neighbors_celltype_file <- read_delim(paste(c("int_corr/", top_neighbors_celltype_azi_l2_file_list[i]), collapse = ""),
+                                            delim = ";", escape_double = FALSE, trim_ws = TRUE)
+  top_neighbors_celltype <- rbind(top_neighbors_celltype, top_neighbors_celltype_file)
+}
+top_neighbors_celltype <- as.matrix(top_neighbors_celltype)
+rownames(top_neighbors_celltype) <- top_neighbors_celltype[,1]
+top_neighbors_celltype <- top_neighbors_celltype[colnames(tapestri@assays$COMP),-1]
+
+celltype_call  <- c()
+celltype_score <- c()
+for (i in 1:dim(top_neighbors_celltype)[1]) {
+  majority_vote <- table(top_neighbors_celltype[i,])
+  if (length(majority_vote) > 1) {
+    majority_vote <- sort(majority_vote, decreasing = TRUE)
+    if (majority_vote[1] != majority_vote[2]) {
+      celltype_call  <- rbind(celltype_call,  names(majority_vote[1]))
+      celltype_score <- rbind(celltype_score, as.numeric(majority_vote[1]))
+    } else {
+      majority_vote_ties <- length(which(majority_vote - majority_vote[1] == 0))
+      majority_vote_ties <- names(majority_vote)[1:majority_vote_ties]
+      j <- 1
+      celltype_tie <- top_neighbors_celltype[i,j]
+      while (1) {
+        if (is.element(top_neighbors_celltype[i,j], majority_vote_ties)) break
+        j <- j + 1
+        celltype_tie <- top_neighbors_celltype[i,j]
+      }
+      celltype_call  <- rbind(celltype_call,  celltype_tie)
+      celltype_score <- rbind(celltype_score, as.numeric(majority_vote[1]))
+    }
+  } else {
+    celltype_call  <- rbind(celltype_call,  names(majority_vote[1]))
+    celltype_score <- rbind(celltype_score, as.numeric(majority_vote[1]))
+  }
+}
+
+tapestri$celltype.azimuth.l2 <- as.character(celltype_call)
+tapestri$celltypescore.azimuth.l2 <- as.integer(celltype_score)
+
+nm_map <- data.frame(l2 = sort(unique(tapestri$celltype.azimuth.l2)), nm = c("ASDC", "B", "B", "B", "CD14 Mono", "CD16 Mono", "CD4 T", "CD4 T", "CD4 T", "CD4 T", "CD4 T", "CD8 T", "CD8 T", "CD8 T", "CD8 T", "cDC", "cDC", "dnT", "Doublet", "Eryth", "gdT", "HSPC", "ILC", "MAIT", "NK_CD56dim", "NK Proliferating", "NK_CD56bright", "pDC", "Plasmablast", "Platelet", "Treg"))
+celltype.nm <- data.frame(l2 = tapestri$celltype.azimuth.l2) %>% left_join(nm_map)
+tapestri$celltype.nm <- celltype.nm$nm
+
+top_neighbors_celltype <- c()
+for (i in 1:length(top_neighbors_celltype_monaco_file_list)) {
+  top_neighbors_celltype_file <- read_delim(paste(c("int_corr/", top_neighbors_celltype_monaco_file_list[i]), collapse = ""),
+                                            delim = ";", escape_double = FALSE, trim_ws = TRUE)
+  top_neighbors_celltype <- rbind(top_neighbors_celltype, top_neighbors_celltype_file)
+}
+top_neighbors_celltype <- as.matrix(top_neighbors_celltype)
+rownames(top_neighbors_celltype) <- top_neighbors_celltype[,1]
+top_neighbors_celltype <- top_neighbors_celltype[colnames(tapestri@assays$COMP),-1]
+
+celltype_call  <- c()
+celltype_score <- c()
+for (i in 1:dim(top_neighbors_celltype)[1]) {
+  majority_vote <- table(top_neighbors_celltype[i,])
+  if (length(majority_vote) > 1) {
+    majority_vote <- sort(majority_vote, decreasing = TRUE)
+    if (majority_vote[1] != majority_vote[2]) {
+      celltype_call  <- rbind(celltype_call,  names(majority_vote[1]))
+      celltype_score <- rbind(celltype_score, as.numeric(majority_vote[1]))
+    } else {
+      majority_vote_ties <- length(which(majority_vote - majority_vote[1] == 0))
+      majority_vote_ties <- names(majority_vote)[1:majority_vote_ties]
+      j <- 1
+      celltype_tie <- top_neighbors_celltype[i,j]
+      while (1) {
+        if (is.element(top_neighbors_celltype[i,j], majority_vote_ties)) break
+        j <- j + 1
+        celltype_tie <- top_neighbors_celltype[i,j]
+      }
+      celltype_call  <- rbind(celltype_call,  celltype_tie)
+      celltype_score <- rbind(celltype_score, as.numeric(majority_vote[1]))
+    }
+  } else {
+    celltype_call  <- rbind(celltype_call,  names(majority_vote[1]))
+    celltype_score <- rbind(celltype_score, as.numeric(majority_vote[1]))
+  }
+}
+
+tapestri$celltype.monaco.azimuth <- as.character(celltype_call)
+tapestri$celltypescore.monaco.azimuth <- as.integer(celltype_score)
+
+saveRDS(tapestri, file = "int_rds/tapestri_azimuth_monaco.rds")
+
+plot1 <- ggplot(data.frame(tapestri[["umap"]][[]], cluster = tapestri$celltype.azimuth.l2), aes(x=UMAP_1, y=UMAP_2, color=cluster)) +
+    geom_point(size=1, stroke=0.1, shape=16) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot()
+ggsave(plot = plot1, width = 10, height = 10, dpi = 300,
+       filename = "figure/umap_azimuth_l2.pdf", useDingbats = FALSE)
+
+plot1 <- ggplot(data.frame(tapestri[["umap"]][[]], cluster = tapestri$celltype.monaco.azimuth), aes(x=UMAP_1, y=UMAP_2, color=cluster)) +
+    geom_point(size=1, stroke=0.1, shape=16) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot()
+ggsave(plot = plot1, width = 10, height = 10, dpi = 300,
+       filename = "figure/umap_monaco_azimuth.pdf", useDingbats = FALSE)
+```
+
+
+### Re-label Monaco cell type calls.  
+```{r, include = FALSE}
+tapestri <- readRDS("int_rds/tapestri_azimuth_monaco.rds")
+
+monaco <- celldex::MonacoImmuneData()
+colors.monaco <- c(`CD4 T` = "#81a66e", `Treg` = "#32584e", `CD8 T` = "#f5df87", `gdT` = "#b4c29f", `MAIT` = "#fdbd92", `NK` = "#546046", `B` = "#7c6289", `Plasmablast` = "#5991ba", `CD14 Mono` = "#d18c5a", `CD16 Mono` = "#f18e8c", `Int Mono` = "#8e402b", `cDC` = "#65a84c", `pDC` = "#b5d75b", `HSPC` = "#ffcbe7", `Neutrophils` = "#a2bcc2", `Basophils` = "#66a5a4")
+fine_map <- data.frame(colData(monaco)) %>% select(-label.ont) %>% distinct() %>%
+    mutate(new.fine = case_when(
+        label.fine == "MAIT cells" ~ "MAIT",
+        (label.fine == "Vd2 gd T cells" | label.fine == "Non-Vd2 gd T cells") ~ "gdT",
+        label.fine == "T regulatory cells" ~ "Treg",
+        label.fine == "Classical monocytes" ~ "CD14 Mono",
+        label.fine == "Non classical monocytes" ~ "CD16 Mono",
+        label.fine == "Intermediate monocytes" ~ "Int Mono",
+        label.fine == "Plasmacytoid dendritic cells" ~ "pDC",
+        label.fine == "Myeloid dendritic cells" ~ "cDC",
+        label.fine == "Plasmablasts" ~ "Plasmablast",
+        label.fine == "Progenitor cells" ~ "HSPC",
+        label.fine == "Natural killer cells" ~ "NK",
+        TRUE ~ label.main)) %>%
+    mutate(new.fine = factor(case_when(
+        new.fine == "CD8+ T cells" ~ "CD8 T",
+        new.fine == "CD4+ T cells" ~ "CD4 T",
+        new.fine == "B cells" ~ "B",
+        TRUE ~ new.fine), levels = names(colors.monaco))) %>%
+    rename(labels1 = label.fine)
+labels2 <- c()
+for (i in 1:length(rownames(fine_map))) {
+  str_pos <- unlist(gregexpr("_", rownames(fine_map)[i]))[1]
+  labels2 <- c(labels2, substr(rownames(fine_map)[i], str_pos+1, nchar(rownames(fine_map)[i])))
+}
+fine_map <- cbind(fine_map, data.frame(labels2 = labels2))
+
+temp <- data.frame(labels1 = tapestri$celltype.monaco.azimuth) %>% left_join(fine_map)
+tapestri$celltype.monaco.azimuth <- temp$new.fine
+
+saveRDS(tapestri, file = "int_rds/tapestri_azimuth_monaco_relabeled.rds")
+```
+
+
+### Draw figures.  
+```{r, include = FALSE}
+tapestri <- readRDS("int_rds/tapestri_azimuth_monaco_relabeled.rds")
+
+levels.monaco <- c("CD4 T", "Treg", "CD8 T", "gdT", "MAIT", "NK", "B", "Plasmablast", "CD14 Mono", "CD16 Mono", "Int Mono", "cDC", "pDC", "HSPC", "Neutrophils", "Basophils")
+colors.monaco <- c(`CD4 T` = "#99CCCC", `Treg` = "#E794EA", `CD8 T` = "#A9E0AB", `gdT` = "#CE5B5B", `MAIT` = "#EDA6A6", `NK` = "#E2E8A6", `B` = "#D68645", `Plasmablast` = "#48B758", `CD14 Mono` = "#B4AEE5", `CD16 Mono` = "#F9BD95", `Int Mono` = "#B81254", `cDC` = "#67A5E5", `pDC` = "#D8E1A7", `HSPC` = "#C683ED", `Neutrophils` = "#3B69B7", `Basophils` = "black")
+
+pdf(file='figure/umap_group.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], label = tapestri$group), aes(x=UMAP_1, y=UMAP_2, color=label)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$group) %>% data.frame() %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_group_legend.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], label = tapestri$group), aes(x=UMAP_1, y=UMAP_2, color=label)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot()
+p2 <- table(tapestri$group) %>% data.frame() %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_monaco_azimuth.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco)),
+             aes(x=UMAP_1, y=UMAP_2, color=label)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_monaco_azimuth_legend.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco)),
+             aes(x=UMAP_1, y=UMAP_2, color=label)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot()
+p2 <- table(tapestri$celltype.monaco.azimuth) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_legend.pdf', width=6, height=7)
+DefaultAssay(tapestri) <- "DSB"
+tapestri_mat <- as.matrix(GetAssayData(tapestri, slot = "counts"))
+tapestri_mat[tapestri_mat < quantile(tapestri_mat, 0.1)] <- quantile(tapestri_mat, 0.1)
+tapestri_mat[tapestri_mat > quantile(tapestri_mat, 0.9)] <- quantile(tapestri_mat, 0.9)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["CD11b",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot()
+p1 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_cd11b.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["CD11b",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot() + theme(legend.position = "none")
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_cd14.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["CD14",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot() + theme(legend.position = "none")
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_cd16.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["CD16",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot() + theme(legend.position = "none")
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_hla_dr.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["HLA-DR",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot() + theme(legend.position = "none")
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_cd11c.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["CD11c",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot() + theme(legend.position = "none")
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_cd64.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["CD64",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot() + theme(legend.position = "none")
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_markers_cd56.pdf', width=6, height=7)
+p1 <- ggplot(data.frame(tapestri[["umap"]][[]], marker = tapestri_mat["CD56",]), aes(x=UMAP_1, y=UMAP_2, color=marker)) + 
+    geom_point(size=0.2, stroke=0.1, shape=16) +
+    scale_colour_gradient(low = "grey90", high = "blue") +
+    guides(color = "colorbar") +
+    theme_cowplot() + theme(legend.position = "none")
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_all.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_chip_all, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter(mutation == 1)) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.5, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[tapestri$status_chip_all == 1]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_wt.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_chip_all, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter(mutation == 0)) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.2, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[tapestri$status_chip_all == 0]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_tet2.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_tet2, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter((mutation == 1 | mutation == 2))) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.5, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[(tapestri$status_tet2 == 1 | tapestri$status_tet2 == 2)]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_dnmt3a.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_dnmt3a, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter((mutation == 1 | mutation == 2))) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.5, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[(tapestri$status_dnmt3a == 1 | tapestri$status_dnmt3a == 2)]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_asxl1.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_asxl1, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter((mutation == 1 | mutation == 2))) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.5, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[(tapestri$status_asxl1 == 1 | tapestri$status_asxl1 == 2)]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_cbl.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_cbl, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter((mutation == 1 | mutation == 2))) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.5, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[(tapestri$status_cbl == 1 | tapestri$status_cbl == 2)]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_sf3b1.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_sf3b1, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter((mutation == 1 | mutation == 2))) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.5, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[(tapestri$status_sf3b1 == 1 | tapestri$status_sf3b1 == 2)]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/umap_chip_zrsr2.pdf', width=6, height=7)
+plot_df <- data.frame(tapestri[["umap"]][[]], mutation = tapestri$status_zrsr2, label = factor(tapestri$celltype.monaco.azimuth, levels=levels.monaco))
+p1 <- ggplot(plot_df %>% filter((mutation == 1 | mutation == 2))) +
+    geom_point(aes(x=UMAP_1, y=UMAP_2, color=label), size=0.5, stroke=0.1, shape=16) +
+    scale_color_manual(values = colors.monaco) +
+    guides(color = guide_legend(override.aes = list(size=5))) +
+    theme_cowplot() + theme(legend.position = "none")
+p2 <- table(tapestri$celltype.monaco.azimuth[(tapestri$status_zrsr2 == 1 | tapestri$status_zrsr2 == 2)]) %>% data.frame() %>% mutate(Var1 = factor(Var1, levels = levels.monaco)) %>%
+        ggplot(aes(fill=Var1, y=Freq, x="Blah")) +
+        geom_bar(position="fill", stat="identity", width = 0.6) + 
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + scale_y_reverse() + theme_cowplot() + 
+        theme(aspect.ratio=0.1, legend.position = "none", axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.line = element_blank())
+p1 + p2 + plot_layout(widths = c(1), heights = c(9, 1))
+dev.off()
+
+pdf(file='figure/compostion_chip_tet2.pdf', width=13, height=7)
+sample_group_info <- table(tapestri$sample, tapestri$group)
+sample_mutation_info <- table(tapestri$sample, tapestri$status_tet2)
+sample_mutation_info <- names(which(sample_mutation_info[,1] == 0))
+freq_table_all <- c()
+p_bonf_phyper_all <- c()
+for (i in 1:length(sample_mutation_info)) {
+  sample_group <- names(which(sample_group_info[sample_mutation_info[i],] > 0))
+  if (sample_group == "COVIDCHIP" | sample_group == "CHIP only") {
+    freq_table <- as.matrix(table(tapestri$status_tet2[tapestri$sample == sample_mutation_info[i]],
+                                  tapestri$celltype.monaco.azimuth[tapestri$sample == sample_mutation_info[i]]))
+    freq_table <- freq_table[,table(tapestri$celltype.monaco.azimuth) != 0]
+    freq_table <- rbind(freq_table[1,], colSums(freq_table[c(2,3),]))
+    rownames(freq_table) <- c(paste(c(sample_group, sample_mutation_info[i], "WT_#", sum(freq_table[1,])), collapse = "_"),
+                              paste(c(sample_group, sample_mutation_info[i], "TET2_#", sum(freq_table[2,])), collapse = "_"))
+    p_phyper <- c()
+    for (j in 1:dim(freq_table)[2]) {
+      if (sum(freq_table[,j]) > 0) {
+        p_phyper <- c(p_phyper, phyper(freq_table[2,j], sum(freq_table[,j]), sum(freq_table[,-j]), sum(freq_table[2,]), lower.tail = FALSE))
+      } else {
+        p_phyper <- c(p_phyper, 1)
+      }
+    }
+    p_bonf_phyper_all <- rbind(p_bonf_phyper_all, rep(2, length(p_phyper)), p.adjust(p_phyper, method = "bonferroni"))
+    freq_table_all <- rbind(freq_table_all, freq_table)
+  }
+}
+df_sample <- as.factor(rep(rownames(freq_table_all), times = dim(freq_table_all)[2]))
+df_sample <- factor(df_sample, levels = rev(rownames(freq_table_all)[c(7,8,1,2,5,6,11,12,9,10,3,4)]))
+df_celltype <- as.factor(rep(colnames(freq_table_all), each = dim(freq_table_all)[1]))
+df_celltype <- factor(df_celltype, levels = rev(levels.monaco))
+df_p_bonf_phyper <- as.vector(p_bonf_phyper_all)
+df_star <- df_p_bonf_phyper
+df_star[df_p_bonf_phyper > 0.05] <- ""
+df_star[df_p_bonf_phyper <= 0.05] <- "*"
+# df_star[df_p_bonf_phyper <= 0.01] <- "**"
+# df_star[df_p_bonf_phyper <= 0.001] <- "***"
+df_freq_table <- data.frame(sample = df_sample, celltype = df_celltype, cell_proportions = as.vector(freq_table_all), stars = df_star)
+p1 <- ggplot(df_freq_table, aes(fill=celltype, y=cell_proportions, x=sample, label=stars)) +
+        geom_bar(position = "fill", stat = "identity", width = 0.6, color = "black") + 
+        geom_text(position = position_fill(vjust = 0.5), stat = "identity", size = 5) +
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + theme_cowplot()
+p1
+dev.off()
+
+pdf(file='figure/compostion_chip_dnmt3a_asxl1.pdf', width=13, height=7)
+sample_group_info <- table(tapestri$sample, tapestri$group)
+sample_mutation_info <- table(tapestri$sample, tapestri$status_dnmt3a)
+sample_mutation_info <- names(which(sample_mutation_info[,1] == 0))
+freq_table_all <- c()
+p_bonf_phyper_all <- c()
+for (i in 1:length(sample_mutation_info)) {
+  sample_group <- names(which(sample_group_info[sample_mutation_info[i],] > 0))
+  if (sample_group == "COVIDCHIP" | sample_group == "CHIP only") {
+    freq_table <- as.matrix(table(tapestri$status_dnmt3a[tapestri$sample == sample_mutation_info[i]],
+                                  tapestri$celltype.monaco.azimuth[tapestri$sample == sample_mutation_info[i]]))
+    freq_table <- freq_table[,table(tapestri$celltype.monaco.azimuth) != 0]
+    freq_table <- rbind(freq_table[1,], colSums(freq_table[c(2,3),]))
+    rownames(freq_table) <- c(paste(c(sample_group, sample_mutation_info[i], "WT_#", sum(freq_table[1,])), collapse = "_"),
+                              paste(c(sample_group, sample_mutation_info[i], "DNMT3A_#", sum(freq_table[2,])), collapse = "_"))
+    p_phyper <- c()
+    for (j in 1:dim(freq_table)[2]) {
+      if (sum(freq_table[,j]) > 0) {
+        p_phyper <- c(p_phyper, phyper(freq_table[2,j], sum(freq_table[,j]), sum(freq_table[,-j]), sum(freq_table[2,]), lower.tail = FALSE))
+      } else {
+        p_phyper <- c(p_phyper, 1)
+      }
+    }
+    p_bonf_phyper_all <- rbind(p_bonf_phyper_all, rep(2, length(p_phyper)), p.adjust(p_phyper, method = "bonferroni"))
+    freq_table_all <- rbind(freq_table_all, freq_table)
+  }
+}
+sample_mutation_info <- table(tapestri$sample, tapestri$status_asxl1)
+sample_mutation_info <- names(which(sample_mutation_info[,1] == 0))
+for (i in 1:length(sample_mutation_info)) {
+  sample_group <- names(which(sample_group_info[sample_mutation_info[i],] > 0))
+  if (sample_group == "COVIDCHIP" | sample_group == "CHIP only") {
+    freq_table <- as.matrix(table(tapestri$status_asxl1[tapestri$sample == sample_mutation_info[i]],
+                                  tapestri$celltype.monaco.azimuth[tapestri$sample == sample_mutation_info[i]]))
+    freq_table <- freq_table[,table(tapestri$celltype.monaco.azimuth) != 0]
+    freq_table <- rbind(freq_table[1,], colSums(freq_table[c(2,3),]))
+    rownames(freq_table) <- c(paste(c(sample_group, sample_mutation_info[i], "WT_#", sum(freq_table[1,])), collapse = "_"),
+                              paste(c(sample_group, sample_mutation_info[i], "ASXL1_#", sum(freq_table[2,])), collapse = "_"))
+    p_phyper <- c()
+    for (j in 1:dim(freq_table)[2]) {
+      if (sum(freq_table[,j]) > 0) {
+        p_phyper <- c(p_phyper, phyper(freq_table[2,j], sum(freq_table[,j]), sum(freq_table[,-j]), sum(freq_table[2,]), lower.tail = FALSE))
+      } else {
+        p_phyper <- c(p_phyper, 1)
+      }
+    }
+    p_bonf_phyper_all <- rbind(p_bonf_phyper_all, rep(2, length(p_phyper)), p.adjust(p_phyper, method = "bonferroni"))
+    freq_table_all <- rbind(freq_table_all, freq_table)
+  }
+}
+df_sample <- as.factor(rep(rownames(freq_table_all), times = dim(freq_table_all)[2]))
+df_sample <- factor(df_sample, levels = rev(rownames(freq_table_all)[c(9,10,3,4,7,8,1,2,5,6,11,12)]))
+df_celltype <- as.factor(rep(colnames(freq_table_all), each = dim(freq_table_all)[1]))
+df_celltype <- factor(df_celltype, levels = rev(levels.monaco))
+df_p_bonf_phyper <- as.vector(p_bonf_phyper_all)
+df_star <- df_p_bonf_phyper
+df_star[df_p_bonf_phyper > 0.05] <- ""
+df_star[df_p_bonf_phyper <= 0.05] <- "*"
+# df_star[df_p_bonf_phyper <= 0.01] <- "**"
+# df_star[df_p_bonf_phyper <= 0.001] <- "***"
+df_freq_table <- data.frame(sample = df_sample, celltype = df_celltype, cell_proportions = as.vector(freq_table_all), stars = df_star)
+p1 <- ggplot(df_freq_table, aes(fill=celltype, y=cell_proportions, x=sample, label=stars)) +
+        geom_bar(position = "fill", stat = "identity", width = 0.6, color = "black") + 
+        geom_text(position = position_fill(vjust = 0.5), stat = "identity", size = 5) +
+        scale_fill_manual(values = colors.monaco) +
+        coord_flip() + theme_cowplot()
+p1
+dev.off()
+
+# pdf(file='figure/temp/spaghetti_CD14_Mono.pdf', width=6, height=6)
+# wilcox_result <- wilcox.test(freq_table_wt[,colnames(freq_table_wt) == "CD14 Mono"],
+#                              freq_table_mt[,colnames(freq_table_mt) == "CD14 Mono"],  paired=TRUE)
+# p1 <- ggplot(df_all, aes(x=status, y=`CD14 Mono`)) + 
+#         geom_point(aes(group = sample_group, color = group)) +
+#         geom_line(aes(group = sample_group, color = group)) +
+#         xlab("TET2 status") +
+#         ylab("CD14 Mono fraction") +
+#         ggtitle(paste(c("Raw p-value: ", wilcox_result$p.value), collapse = ""))
+# p1
+# dev.off()
+```
